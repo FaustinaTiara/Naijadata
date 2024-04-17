@@ -1,0 +1,113 @@
+const mysql = require('mysql2')
+
+
+const pool = mysql.createPool(
+    {connectionLimit:10,
+        host:"localhost",
+        password:"",
+        user:"root",
+        database:"user_database"
+    })
+
+function getConnection(){
+    return new Promise((resolve,reject)=>{
+pool.getConnection((err,connection)=>{
+    if(err)
+    {reject(err)}
+    else
+    {
+        resolve(connection)
+    }
+})
+
+
+    })
+}
+
+
+
+
+function runQueryValues(conn,sqlQuery,values){
+   return new Promise((resolve,reject)=>{
+conn.query(sqlQuery,values,(err,result)=>{
+    if(err){
+        reject(err)
+
+    }
+    else{
+        resolve(result)
+    }
+})
+   })
+}
+
+const dataFormSchema = `
+CREATE TABLE IF NOT EXISTS DataForms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  middle_name VARCHAR(255),
+  maiden_name VARCHAR(255),
+  date_of_birth DATE,
+  place_of_birth VARCHAR(255),
+  nationality VARCHAR(255),
+  state VARCHAR(255),
+  gender ENUM('Male', 'Female', 'Other'),
+  marital_status VARCHAR(255),
+  religion VARCHAR(255),
+  residential_address VARCHAR(255),
+  residential_city VARCHAR(255),
+  residential_state VARCHAR(255),
+  email_address VARCHAR(255),
+  phone_number VARCHAR(20),
+  nin VARCHAR(20),
+  nin_city VARCHAR(255),
+  nin_state VARCHAR(255),
+  highest_level_of_education VARCHAR(255),
+  institution VARCHAR(255),
+  field_of_study VARCHAR(255),
+  month_of_graduation VARCHAR(20),
+  year_of_graduation INT,
+  employment_type VARCHAR(255),
+  blood_group VARCHAR(10),
+  genotype VARCHAR(10),
+  height_cm INT,
+  weight_kg INT,
+  allergies ENUM('Seafood', 'Asthma', 'Penicillin', 'Insect bites', 'Others'),
+  medical_history ENUM('Cancer', 'Chicken pox', 'Cardiovascular disease', 'Hypertension', 'Diabetes', 'Tuberculosis', 'Epilepsy', 'Others'),
+  any_history ENUM('Surgeries', 'Accidents', 'Hospitalization', 'Others'),
+  additional_note TEXT,
+  face_recognition_data BLOB,
+  verification_code VARCHAR(10);
+  email_verified BOOLEAN DEFAULT FALSE;
+
+)`;
+
+const adminSyntax = "INSERT INTO admins (username, email, password) VALUES (?, ?, ?)";
+
+const signupSyntax = "insert into users(email,password,firstName,lastName,madienName,Day,month,year,address,state,lga,nin,document,biometrics)values(?,?,?,?,?,?,?,?,?,?,?,?)";
+
+
+
+module.exports = {
+    getConnection,
+    runQueryValues,
+    dataFormSchema,
+    adminSyntax,
+    signupSyntax,
+    pool: pool,
+    connect: () => {
+        return new Promise((resolve, reject) => {
+            pool.getConnection((err, connection) => {
+                if (err) {
+                    console.error('Error connecting to MySQL:', err);
+                    reject(err);
+                    return;
+                }
+                console.log('Connected to MySQL');
+                connection.release();
+                resolve();
+            });
+        });
+    }
+};
